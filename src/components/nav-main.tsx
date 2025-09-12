@@ -67,41 +67,41 @@ export function NavMain({
                 </SidebarMenuButton>
               </CollapsibleTrigger>
 
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <SidebarMenuSubButton>
-                            {subItem.icon && (
-                              <subItem.icon className="w-4 h-4 mr-2" />
-                            )}
-                            <span>{subItem.title}</span>
-                            {selectedTimes[subItem.title] && (
-                              <span className="ml-auto text-xs text-gray-500">
-                                {selectedTimes[subItem.title]}
-                              </span>
-                            )}
-                          </SidebarMenuSubButton>
-                        </DropdownMenuTrigger>
+              {/* <CollapsibleContent> */}
+              <SidebarMenuSub>
+                {item.items?.map((subItem) => (
+                  <SidebarMenuSubItem key={subItem.title}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuSubButton>
+                          {subItem.icon && (
+                            <subItem.icon className="w-4 h-4 mr-2" />
+                          )}
+                          <span>{subItem.title}</span>
+                          {selectedTimes[subItem.title] && (
+                            <span className="ml-auto text-xs text-gray-500">
+                              {selectedTimes[subItem.title]}
+                            </span>
+                          )}
+                        </SidebarMenuSubButton>
+                      </DropdownMenuTrigger>
 
-                        <DropdownMenuContent
-                          align="center"
-                          side="right"
-                          className="p-0 mt-15 border bg-white shadow-none max-h-[300px] overflow-y-auto"
-                        >
-                          <TimeCard
-                            onSelect={
-                              (time) => handleSelectTime(subItem.title, time) // preserves previous selections
-                            }
-                          />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
+                      <DropdownMenuContent
+                        align="center"
+                        side="right"
+                        className="p-0 mt-15 border bg-white shadow-none max-h-[300px] overflow-y-auto"
+                      >
+                        <TimeCard
+                          onSelect={
+                            (time) => handleSelectTime(subItem.title, time) // preserves previous selections
+                          }
+                        />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+              {/* </CollapsibleContent> */}
             </SidebarMenuItem>
           </Collapsible>
         ))}

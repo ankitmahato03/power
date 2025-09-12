@@ -1,27 +1,12 @@
 "use client";
 
 import * as React from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -40,12 +25,12 @@ const chartConfig = {
   visitors: {
     label: "Visitors",
   },
-  desktop: {
-    label: "Desktop",
+  sell_bid: {
+    label: "sell_bid",
     color: "var(--chart-1)",
   },
-  mobile: {
-    label: "Mobile",
+  purches_bid: {
+    label: "purches_bid",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
@@ -125,29 +110,50 @@ export function ActualChart() {
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="views"
+                  nameKey="sell_bid"
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    });
+                    const date = new Date(value);
+
+                    if (
+                      timeRange === "7d" ||
+                      timeRange === "30d" ||
+                      timeRange === "90d"
+                    ) {
+                      // Show full day, month, year
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      });
+                    } else if (timeRange === "1y") {
+                      // Show only month + year
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      });
+                    } else {
+                      // Fallback: just year
+                      return date.toLocaleDateString("en-US", {
+                        year: "numeric",
+                      });
+                    }
                   }}
                 />
               }
             />
+
             {/* <ChartTooltip cursor={false} content={<ChartTooltipContent />} /> */}
             <Line
-              dataKey="desktop"
+              dataKey="sell_bid"
               type="monotone"
-              stroke="var(--color-desktop)"
+              stroke="var(--chart-1)"
               strokeWidth={2}
               dot={false}
             />
             <Line
-              dataKey="mobile"
+              dataKey="purches_bid"
               type="monotone"
-              stroke="var(--color-mobile)"
+              stroke="var(--chart-2)"
               strokeWidth={2}
               dot={false}
             />
