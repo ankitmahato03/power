@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SIDEBAR_NAV_DATA } from "@/lib/constant";
 import DateTimeBlockTable from "@/components/time-selector";
+import TimeBlockChart from "@/components/slide-date-chart";
 
 export default function Page() {
   return (
@@ -44,7 +45,8 @@ export default function Page() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <ActualChart />
+          {/* <ActualChart /> */}
+          <TimeBlockChart />
           {/* <ActualChart /> */}
           <DateTimeBlockTable />
         </div>

@@ -21,33 +21,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-
-// --- Helper to generate 96 time blocks (15-min intervals) ---
-const generateTimeBlocks = (): string[] => {
-  const blocks: string[] = [];
-  let hour = 0;
-  let minute = 0;
-
-  for (let i = 0; i < 96; i++) {
-    const label = `${String(hour).padStart(2, "0")}:${String(minute).padStart(
-      2,
-      "0"
-    )}`;
-    blocks.push(label);
-    minute += 15;
-    if (minute === 60) {
-      minute = 0;
-      hour++;
-    }
-  }
-  return blocks;
-};
-
-const timeBlocks: string[] = generateTimeBlocks();
+// import { EXPANDED_DATA } from "@/lib/data";
+import { EXPANDED_DATA_T } from "@/lib/constant";
 
 type TableRowData = {
+  date: string;
   timeBlock: string;
-  value: string;
+  sellBid: string;
+  purchaseBid: string;
 };
 
 export default function DateTimeBlockTable() {
@@ -63,13 +44,21 @@ export default function DateTimeBlockTable() {
     );
   };
 
-  // Generate table with default values
+  // Generate table using EXPANDED_DATA
   const handleGenerateTable = () => {
     if (!date || selectedBlocks.length === 0) return;
 
-    const newTableData: TableRowData[] = selectedBlocks.map((block) => ({
-      timeBlock: block,
-      value: "Default", // pre-filled value
+    const formattedDate = format(date, "yyyy-MM-dd");
+
+    // Filter EXPANDED_DATA based on date + selected blocks
+    const newTableData: TableRowData[] = EXPANDED_DATA_T.filter(
+      (row: any) =>
+        row.date === formattedDate && selectedBlocks.includes(row.timeBlock)
+    ).map((row: any) => ({
+      date: row.date,
+      timeBlock: row.timeBlock,
+      sellBid: row.sellBid,
+      purchaseBid: row.purchaseBid,
     }));
 
     setTableData(newTableData);
@@ -77,10 +66,14 @@ export default function DateTimeBlockTable() {
   };
 
   // Handle table input change
-  const handleInputChange = (index: number, newValue: string) => {
+  const handleInputChange = (
+    index: number,
+    field: "sellBid" | "purchaseBid",
+    newValue: string
+  ) => {
     setTableData((prev) => {
       const updated = [...prev];
-      updated[index].value = newValue;
+      updated[index][field] = newValue;
       return updated;
     });
   };
@@ -104,6 +97,16 @@ export default function DateTimeBlockTable() {
     }
   };
 
+  // Extract time blocks only for the selected date
+  const formattedDate = date ? format(date, "yyyy-MM-dd") : "";
+  const availableTimeBlocks: string[] = Array.from(
+    new Set(
+      EXPANDED_DATA_T.filter((row: any) => row.date === formattedDate).map(
+        (row: any) => row.timeBlock
+      )
+    )
+  );
+
   return (
     <div className="space-y-6">
       {/* Date Picker */}
@@ -116,7 +119,7 @@ export default function DateTimeBlockTable() {
       <div>
         <h2 className="text-lg font-bold">Select Time Blocks</h2>
         <div className="grid grid-cols-6 gap-2 max-h-[300px] overflow-y-auto p-2 border rounded">
-          {timeBlocks.map((block) => (
+          {availableTimeBlocks.map((block) => (
             <div key={block} className="flex items-center space-x-2">
               <Checkbox
                 checked={selectedBlocks.includes(block)}
@@ -138,27 +141,42 @@ export default function DateTimeBlockTable() {
 
       {/* Dialog with Editable Table */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Edit Table</DialogTitle>
+            <DialogTitle>Edit Bids</DialogTitle>
           </DialogHeader>
 
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Date</TableHead>
                 <TableHead>Time Block</TableHead>
-                <TableHead>Value</TableHead>
+                <TableHead>Sell Bid</TableHead>
+                <TableHead>Purchase Bid</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tableData.map((row, index) => (
-                <TableRow key={row.timeBlock}>
+                <TableRow key={`${row.date}-${row.timeBlock}`}>
+                  <TableCell>{row.date}</TableCell>
                   <TableCell>{row.timeBlock}</TableCell>
                   <TableCell>
                     <input
                       type="text"
-                      value={row.value}
-                      onChange={(e) => handleInputChange(index, e.target.value)}
+                      value={row.sellBid}
+                      onChange={(e) =>
+                        handleInputChange(index, "sellBid", e.target.value)
+                      }
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <input
+                      type="text"
+                      value={row.purchaseBid}
+                      onChange={(e) =>
+                        handleInputChange(index, "purchaseBid", e.target.value)
+                      }
                       className="border rounded px-2 py-1 w-full"
                     />
                   </TableCell>

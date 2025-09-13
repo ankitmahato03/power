@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { Brush, CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,20 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ACTUAL_CHART_DATA } from "@/lib/constant";
 
-export const description = "An interactive area chart";
+import { EXPANDED_DATA } from "@/lib/constant";
+
+export const description = "An interactive line chart";
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  sell_bid: {
-    label: "sell_bid",
+  sellbid: {
+    label: "Sell Bid",
     color: "var(--chart-1)",
   },
-  purches_bid: {
-    label: "purches_bid",
+  purchasebid: {
+    label: "Purchase Bid",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
@@ -38,19 +36,51 @@ const chartConfig = {
 export function ActualChart() {
   const [timeRange, setTimeRange] = React.useState("90d");
 
-  const filteredData = ACTUAL_CHART_DATA.filter((item) => {
-    const date = new Date(item.date);
+  const filteredData = React.useMemo(() => {
+    if (timeRange === "1d") {
+      // Pick the last date in dataset (latest available)
+      const latestDate = EXPANDED_DATA[EXPANDED_DATA.length - 1]?.date;
+      return EXPANDED_DATA.filter((item) => item.date === latestDate);
+    }
+
     const referenceDate = new Date("2024-06-30");
     let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
-    }
+    if (timeRange === "30d") daysToSubtract = 30;
+    else if (timeRange === "7d") daysToSubtract = 7;
+
     const startDate = new Date(referenceDate);
     startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+
+    // Group by date (aggregate)
+    const grouped: Record<
+      string,
+      { date: string; sellbid: number; purchasebid: number; count: number }
+    > = {};
+
+    EXPANDED_DATA.forEach((item) => {
+      const d = new Date(item.date);
+      if (d >= startDate) {
+        if (!grouped[item.date]) {
+          grouped[item.date] = {
+            date: item.date,
+            sellbid: 0,
+            purchasebid: 0,
+            count: 0,
+          };
+        }
+        grouped[item.date].sellbid += item.sellbid;
+        grouped[item.date].purchasebid += item.purchasebid;
+        grouped[item.date].count += 1;
+      }
+    });
+
+    // Take average per day
+    return Object.values(grouped).map((d) => ({
+      date: d.date,
+      sellbid: d.sellbid / d.count,
+      purchasebid: d.purchasebid / d.count,
+    }));
+  }, [timeRange]);
 
   return (
     <Card className="pt-0">
@@ -66,15 +96,10 @@ export function ActualChart() {
             <SelectValue placeholder="Last 3 months" />
           </SelectTrigger>
           <SelectContent className="rounded-xl">
-            <SelectItem value="90d" className="rounded-lg">
-              Last 3 months
-            </SelectItem>
-            <SelectItem value="30d" className="rounded-lg">
-              Last 30 days
-            </SelectItem>
-            <SelectItem value="7d" className="rounded-lg">
-              Last 7 days
-            </SelectItem>
+            <SelectItem value="1d">Last 1 day</SelectItem>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+            <SelectItem value="90d">Last 3 months</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -86,19 +111,19 @@ export function ActualChart() {
           <LineChart
             accessibilityLayer
             data={filteredData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12 }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="date"
+              dataKey={timeRange === "1d" ? "timeblock" : "date"}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
+                if (timeRange === "1d") {
+                  return value; // show timeblocks
+                }
                 const date = new Date(value);
                 return date.toLocaleDateString("en-US", {
                   month: "short",
@@ -110,48 +135,38 @@ export function ActualChart() {
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="sell_bid"
+                  nameKey="sellbid"
                   labelFormatter={(value) => {
-                    const date = new Date(value);
-
-                    if (
-                      timeRange === "7d" ||
-                      timeRange === "30d" ||
-                      timeRange === "90d"
-                    ) {
-                      // Show full day, month, year
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      });
-                    } else if (timeRange === "1y") {
-                      // Show only month + year
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      });
-                    } else {
-                      // Fallback: just year
-                      return date.toLocaleDateString("en-US", {
-                        year: "numeric",
-                      });
+                    if (timeRange === "1d") {
+                      return `Time: ${value}`;
                     }
+                    const date = new Date(value);
+                    return date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    });
                   }}
                 />
               }
             />
-
-            {/* <ChartTooltip cursor={false} content={<ChartTooltipContent />} /> */}
+            <Brush
+              dataKey="timeblock"
+              height={20}
+              stroke="#8884d8"
+              travellerWidth={10}
+              startIndex={0} // show initial range
+              endIndex={24} // show first 24 blocks (~6 hours)
+            />
             <Line
-              dataKey="sell_bid"
+              dataKey="sellbid"
               type="monotone"
               stroke="var(--chart-1)"
               strokeWidth={2}
               dot={false}
             />
             <Line
-              dataKey="purches_bid"
+              dataKey="purchasebid"
               type="monotone"
               stroke="var(--chart-2)"
               strokeWidth={2}
