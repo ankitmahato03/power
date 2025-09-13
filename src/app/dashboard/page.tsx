@@ -16,6 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { SIDEBAR_NAV_DATA } from "@/lib/constant";
+import DateTimeBlockTable from "@/components/time-selector";
 
 export default function Page() {
   return (
@@ -44,7 +45,8 @@ export default function Page() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <ActualChart />
-          <ActualChart />
+          {/* <ActualChart /> */}
+          <DateTimeBlockTable />
         </div>
       </SidebarInset>
     </SidebarProvider>
