@@ -1,20 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { addMinutes, eachDayOfInterval, format } from "date-fns";
+import { useMemo, useState } from "react";
 import {
-  format,
-  eachDayOfInterval,
-  eachMinuteOfInterval,
-  addMinutes,
-} from "date-fns";
-import {
-  LineChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
 
 // Dropdown options
