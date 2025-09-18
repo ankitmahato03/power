@@ -1,3 +1,3 @@
 ## About
 
-a power price simulation app
+A power price simulation app
