@@ -1,6 +1,6 @@
-import { ActualChart } from "@/components/actual-chart";
 import { AppSidebar } from "@/components/app-sidebar";
-import { UserIcon } from "@/components/user";
+import TimeBlockChart from "@/components/slide-date-chart";
+import DateTimeBlockTable from "@/components/time-selector";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,15 +9,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { UserIcon } from "@/components/user";
 import { SIDEBAR_NAV_DATA } from "@/lib/constant";
-import DateTimeBlockTable from "@/components/time-selector";
-import TimeBlockChart from "@/components/slide-date-chart";
 
 export default function Page() {
   return (
@@ -31,7 +25,7 @@ export default function Page() {
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#">
                     Building Your Application
-                  </BreadcrumbLink>koi
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
